@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Wedding of Hedar & Puspita</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1OtEOJjBlEzq4RXm1OilIgtNKN5A4hAU",
+            authDomain: "undangan-muhammad-hedar.firebaseapp.com",
+            projectId: "undangan-muhammad-hedar",
+            storageBucket: "undangan-muhammad-hedar.firebasestorage.app",
+            messagingSenderId: "824504399963",
+            appId: "1:824504399963:web:f2cbfebcfdf42d127c277e",
+            measurementId: "G-S98FQP8EVQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        let currentUser = null;
+
+        signInAnonymously(auth).catch((error) => console.error("Firebase Auth Error:", error));
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) { loadWishes(); }
+        });
+
+        const loadWishes = () => {
+    const wishesRef = collection(db, 'wishes');
+    onSnapshot(wishesRef, (snapshot) => {
+        const list = document.getElementById('wishes-list');
+        if (!list) return;
+        list.innerHTML = '';
+        
+        if (snapshot.empty) {
+            list.innerHTML = '<p class="text-[10px] italic opacity-50 text-center">Belum ada ucapan.</p>';
+            return;
+        }
+
+        const docs = [];
+        snapshot.forEach(doc => docs.push(doc.data()));
+        docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+        // Menggunakan index untuk menentukan ganjil/genap
+        docs.forEach((data, index) => {
+            const isEven = index % 2 !== 0; // Index 1, 3, 5 dianggap genap secara tampilan (bubble kanan)
+            const wishDiv = document.createElement('div');
+            
+            // Container utama untuk mengatur perataan kiri/kanan
+            wishDiv.className = `flex w-full mb-4 ${isEven ? 'justify-end' : 'justify-start'}`;
+
+            // Struktur Bubble Chat
+            wishDiv.innerHTML = `
+                <div class="max-w-[80%] p-3 shadow-sm ${
+                    isEven 
+                    ? 'bg-[var(--navy-deep)] text-white rounded-l-xl rounded-tr-xl' // Bubble Kanan (Genap)
+                    : 'bg-white text-black border border-gray-100 rounded-r-xl rounded-tl-xl' // Bubble Kiri (Ganjil)
+                }">
+                    <p class="text-[9px] font-bold uppercase tracking-widest mb-1 ${isEven ? 'text-white/70' : 'text-navy-deep/50'}">
+                        ${data.name || 'Tamu'}
+                    </p>
+                    <p class="text-xs leading-relaxed italic">
+                        "${data.message || ''}"
+                    </p>
+                </div>
+            `;
+            list.appendChild(wishDiv);
+        });
+    });
+};
+
+        window.sendWish = async () => {
+    const nameInput = document.getElementById('wish-name'); // Input nama ucapan
+    const msgInput = document.getElementById('wish-input'); // Textarea ucapan
+    
+    // Validasi sederhana
+    if (!currentUser) {
+        alert("Koneksi belum siap, silakan tunggu sebentar.");
+        return;
+    }
+    
+    if (!nameInput.value.trim() || !msgInput.value.trim()) {
+        alert("Mohon isi nama dan ucapan Anda.");
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, 'wishes'), {
+            name: nameInput.value.trim(),
+            message: msgInput.value.trim(),
+            timestamp: serverTimestamp()
+        });
+        
+        // Kosongkan input setelah berhasil
+        nameInput.value = "";
+        msgInput.value = "";
+        
+        showToast("Ucapan terkirim!");
+    } catch (e) {
+        console.error("Gagal mengirim:", e);
+        showToast("Gagal mengirim ucapan.");
+    }
+};
+
+        window.handleRSVP = async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+            const name = document.getElementById('rsvp-name').value;
+            const guests = document.getElementById('rsvp-guests').value;
+            const attend = document.querySelector('input[name="attend"]:checked').value;
+            try {
+                await addDoc(collection(db, 'rsvp'), { name, guests, status: attend, timestamp: serverTimestamp() });
+                showToast("Konfirmasi terkirim!");
+                document.getElementById('rsvp-form').reset();
+            } catch (e) { console.error(e); }
+        };
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;500&family=Alex+Brush&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --navy-deep: #001F3F;
+            --navy-light: #0A2647;
+            --off-white: #FDFDFD;
+            --slate-gray: #708090;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--navy-deep);
+            background-color: var(--off-white);
+            overflow-x: hidden;
+        }
+
+        .no-scroll {
+        overflow: hidden;
+        height: 100vh;
+    }
+
+        .font-serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .font-script {
+            font-family: 'Alex Brush', cursive;
+        }
+
+        .cover-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: var(--navy-deep);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 1.5s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+
+        .cover-screen.hide {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .parallax-hero {
+            background-attachment: fixed;
+            background-position: center;
+            background-size: cover;
+        }
+
+        /* Responsive Fix for Mobile Parallax */
+        @media (max-width: 768px) {
+            .parallax-hero {
+                background-attachment: scroll;
+            }
+        }
+
+        .btn-minimal {
+            border: 1px solid var(--navy-deep);
+            color: var(--navy-deep);
+            transition: all 0.4s ease;
+        }
+
+        .btn-minimal:hover {
+            background-color: var(--navy-deep);
+            color: white;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 31, 63, 0.05);
+        }
+
+        /* maps */
+        .maps-container {
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s ease;
+        overflow: hidden;
+    }
+
+    .maps-container:hover {
+        transform: scale(1.02); /* Sedikit membesar */
+        /* akhir maps */
+    }
+
+    body, html {
+        overflow-x: hidden;
+    }
+
+    .gallery-item {
+        break-inside: avoid;
+        margin-bottom: 1rem;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .gallery-item:hover {
+        transform: translateY(-5px) scale(1.02);
+        z-index: 10;
+    }
+        
+    </style>
+</head>
+
+<body class="antialiased no-scroll">
+
+    <div id="cover" class="cover-screen px-6 text-center">
+        <div data-aos="fade-up">
+            <p class="uppercase tracking-[0.3em] md:tracking-[0.5em] text-[9px] md:text-[10px] mb-6 opacity-70">Wedding
+                Invitation</p>
+            <h1 class="text-5xl md:text-8xl font-serif mb-8">Hedar & Puspita</h1>
+
+            <div class="w-32 h-32 md:w-48 md:h-48 mx-auto mb-8 relative group" data-aos="zoom-in">
+                <div class="absolute inset-0 rounded-full border-2 border-dashed border-white/30 animate-[spin_10s_linear_infinite]"></div>
+                
+                <div class="w-full h-full rounded-full border-4 border-white/20 p-1 overflow-hidden shadow-xl bg-white/10 backdrop-blur-sm">
+                    <img src="https://lh3.googleusercontent.com/d/1btA1WS_P0U-GSm6THHatwcmmXBrTk6LD"
+                         class="w-full h-full object-cover rounded-full transition duration-700 group-hover:scale-110" 
+                         alt="Cover">
+                </div>
+            </div>
+            
+            <p class="font-serif italic text-base md:text-lg mb-10 opacity-80 px-4">Kami mengundang Anda untuk merayakan
+                cinta kami.</p>
+             <button onclick="openInvitation()"
+                class="px-8 py-3 border border-white/50 rounded-full tracking-widest uppercase text-[10px] text-white hover:bg-white hover:text-[var(--navy-deep)] transition-all duration-300">
+                <i class="fa-solid fa-envelope-open mr-2"></i> Buka Undangan
+            </button>
+        </div>
+    </div>
+
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 parallax-hero"
+            style="background-image: url('https://lh3.googleusercontent.com/d/1btA1WS_P0U-GSm6THHatwcmmXBrTk6LD'); filter: brightness(0.7);">
+        </div>
+        
+        <div id="blur-overlay" class="absolute inset-0 pointer-events-none transition-all duration-300 ease-out"></div>
+    
+        <div class="relative z-10 text-center text-white p-6" data-aos="zoom-out">
+            <span class="uppercase tracking-[0.5em] text-[10px] md:text-xs mb-4 block">The Marriage Of</span>
+            <h2 class="text-6xl md:text-9xl font-serif mb-6">Hedar & Puspita</h2>
+            <p class="text-lg md:text-2xl font-serif italic tracking-widest">14 . 04 . 2026</p>
+        </div>
+    </section>
+
+    <section class="py-20 md:py-32 px-6 bg-[var(--navy-deep)] text-center" data-aos="fade-up">
+        <div class="max-w-2xl mx-auto text-white" data-aos="fade-up">
+            <p class="text-xl md:text-2xl font-serif italic leading-relaxed text-navy-deep/80 mb-8 px-2">
+                "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu
+                sendiri..."
+            </p>
+            <p class="uppercase tracking-widest text-[9px] font-semibold text-slate-gray">( Q.S : Ar-Ruum : 21 )</p>
+        </div>
+    </section>
+
+    <section class="py-20 bg-[#F9FAFB]" data-aos="fade-in" data-aos-delay="200">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 md:gap-24 text-center">
+                <div data-aos="fade-up">
+                    <div class="w-48 h-64 md:w-64 md:h-80 mx-auto mb-8 border border-navy-deep/10 p-2 overflow-hidden">
+                        <img src="https://lh3.googleusercontent.com/d/1dVJAzYjH6jW5IaDbgKI6d60ZFbS6X0R9"
+                            class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-500 cursor-pointer" 
+                            alt="Groom">
+                    </div>
+                    <h3 class="text-4xl md:text-5xl font-serif mb-4">Muhammad Hedar</h3>
+                    <p class="text-sm text-slate-gray">Putra dari Bapak Ujang/Opik & Ibu Iyah</p>
+                </div>
+                
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-48 h-64 md:w-64 md:h-80 mx-auto mb-8 border border-navy-deep/10 p-2 overflow-hidden">
+                        <img src="https://lh3.googleusercontent.com/d/1bD7DgNkf9kwpHI2U2_Fo-LYjlXiscKxO"
+                            class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-500 cursor-pointer" 
+                            alt="Bride">
+                    </div>
+                    <h3 class="text-4xl md:text-5xl font-serif mb-4">Puspitasari Damayanti</h3>
+                    <p class="text-sm text-slate-gray">Putri dari Bapak Udin Syamsudin & Ibu Yoyoh</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-[var(--navy-deep)] text-black text-center" data-aos="fade-up">
+        <div class="max-w-4xl mx-auto px-6">
+            <h2 class="text-2xl md:text-4xl font-serif mb-12 tracking-widest text-white">Menghitung Hari Bahagia</h2>
+            <div class="grid grid-cols-4 gap-2 md:gap-4">
+                <div class="bg-white py-4 rounded-lg shadow-md">
+                    <p id="days" class="text-3xl md:text-6xl font-serif mb-1">00</p>
+                    <p class="text-[8px] md:text-[10px] uppercase font-bold opacity-70">Hari</p>
+                </div>
+                <div class="bg-white py-4 rounded-lg shadow-md">
+                    <p id="hours" class="text-3xl md:text-6xl font-serif mb-1">00</p>
+                    <p class="text-[8px] md:text-[10px] uppercase font-bold opacity-70">Jam</p>
+                </div>
+                <div class="bg-white py-4 rounded-lg shadow-md">
+                    <p id="minutes" class="text-3xl md:text-6xl font-serif mb-1">00</p>
+                    <p class="text-[8px] md:text-[10px] uppercase font-bold opacity-70">Menit</p>
+                </div>
+                <div class="bg-white py-4 rounded-lg shadow-md">
+                    <p id="seconds" class="text-3xl md:text-6xl font-serif mb-1">00</p>
+                    <p class="text-[8px] md:text-[10px] uppercase font-bold opacity-70">Detik</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-white">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="p-8 md:p-12 border border-navy-deep/20 text-center" data-aos="fade-up">
+                    <h3 class="text-2xl md:text-3xl font-serif mb-6 italic">Akad Nikah</h3>
+                    <p class="text-sm mb-2 font-bold">Selasa, 14 April 2026</p>
+                    <p class="text-xs text-slate-gray mb-6">07:00 WIB — Selesai</p>
+                    <p class="text-[11px] leading-relaxed mb-8">Kp.cibucil RT 004/002 desa Sukamanah kecamatan Jonggol
+                    </p>
+                    <!-- <a href="#"
+                        class="btn-minimal px-6 py-2 rounded-full text-[9px] uppercase tracking-widest inline-block">Maps</a> -->
+                </div>
+                <div class="p-8 md:p-12 border border-navy-deep/20 text-center" data-aos="fade-up">
+                    <h3 class="text-2xl md:text-3xl font-serif mb-6 italic">Resepsi</h3>
+                    <p class="text-sm mb-2 font-bold">Rabu, 04 Februari 2026</p>
+                    <p class="text-xs text-slate-gray mb-6">07:00 WIB — Selesai</p>
+                    <p class="text-[11px] leading-relaxed mb-8">Kp Ciledug RT/RW 001/005 desa bendungan kec Jonggol</p>
+                    <!-- <a href="#"
+                        class="btn-minimal px-6 py-2 rounded-full text-[9px] uppercase tracking-widest inline-block">Maps</a> -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Maps -->
+    <section class="py-20 bg-[var(--navy-deep)]">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-10" data-aos="fade-up">
+                <h3 class="text-2xl font-serif mb-2 text-white">Lokasi Acara</h3>
+                <div class="line-divider"></div>
+            </div>
+            
+            <div class="maps-container glass-card rounded-2xl shadow-lg border-8 border-white p-2" data-aos="zoom-in">
+                <div class="relative w-full pb-[56.25%] h-0"> 
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15858.400997776615!2d107.04213274637274!3d-6.445342743469538!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69970005d28c0b%3A0x5c53fd382a410ff7!2skp.cibucil!5e0!3m2!1sid!2sid!4v1771698468247!5m2!1sid!2sid" 
+                        class="absolute top-0 left-0 w-full h-full rounded-xl"
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <a href="https://maps.app.goo.gl/JWvBw57M6huszGW77" target="_blank"
+                    class="bg-white text-[var(--navy-deep)] border border-[var(--navy-deep)] px-10 py-3 rounded-full text-[10px] uppercase font-bold tracking-widest inline-block shadow-md hover:bg-[var(--navy-deep)] hover:text-white transition-all duration-300">
+                    <i class="fa-solid fa-location-dot mr-2"></i> Buka di Google Maps
+                </a>
+            </div>
+        </div>
+    </section>
+    <!-- Akhir Maps -->
+
+        <!-- galeri -->
+        <section class="py-20 bg-white" data-aos="fade-up">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-serif text-[var(--navy-deep)] mb-4">Galeri Kebahagiaan</h2>
+                    <div class="line-divider"></div>
+                </div>
+        
+                <div class="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                    <div class="gallery-item overflow-hidden rounded-2xl" data-aos="zoom-in" data-aos-delay="100">
+                        <img src="https://lh3.googleusercontent.com/d/1TyAACIxdb6wxnV-wGXjGQT2nJS-p16o2" 
+                             class="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white transition-transform duration-500 hover:scale-110 cursor-pointer" 
+                             alt="Galeri 2">
+                    </div>
+        
+                    <div class="gallery-item overflow-hidden rounded-2xl" data-aos="zoom-in" data-aos-delay="200">
+                        <img src="https://lh3.googleusercontent.com/d/1Mi0M9dRQfr4Nht98bpYXX9d7TbnMXeJv" 
+                             class="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white transition-transform duration-500 hover:scale-110 cursor-pointer" 
+                             alt="Galeri 3">
+                    </div>
+        
+                    <div class="gallery-item overflow-hidden rounded-2xl" data-aos="zoom-in">
+                        <img src="https://lh3.googleusercontent.com/d/1btA1WS_P0U-GSm6THHatwcmmXBrTk6LD" 
+                             class="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white transition-transform duration-500 hover:scale-110 cursor-pointer" 
+                             alt="Galeri 4">
+                    </div>
+        
+                    <div class="gallery-item overflow-hidden rounded-2xl" data-aos="zoom-in" data-aos-delay="100">
+                        <img src="https://lh3.googleusercontent.com/d/1dVJAzYjH6jW5IaDbgKI6d60ZFbS6X0R9" 
+                             class="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white transition-transform duration-500 hover:scale-110 cursor-pointer" 
+                             alt="Galeri 5">
+                    </div>
+        
+                    <div class="gallery-item overflow-hidden rounded-2xl" data-aos="zoom-in" data-aos-delay="200">
+                        <img src="https://lh3.googleusercontent.com/d/1bD7DgNkf9kwpHI2U2_Fo-LYjlXiscKxO" 
+                             class="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white transition-transform duration-500 hover:scale-110 cursor-pointer" 
+                             alt="Galeri 6">
+                    </div>
+                </div>
+            </div>
+        </section>
+         <!-- akhir galeri -->
+
+    <section class="py-20 bg-[#F9FAFB]" data-aos="fade-up">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16">
+                <div class="glass-card p-8 rounded-xl shadow-sm">
+                    <h3 class="text-2xl font-serif mb-8 text-center md:text-left">RSVP</h3>
+                    <form id="rsvp-form" onsubmit="window.handleRSVP(event)" class="space-y-4">
+                        <input type="text" id="rsvp-name" placeholder="Nama"
+                            class="w-full bg-white/50 border-b py-3 outline-none text-xs uppercase" required>
+                        <select id="rsvp-guests"
+                            class="w-full bg-white/50 border-b py-3 outline-none text-xs uppercase">
+                            <option value="1">1 Orang</option>
+                            <option value="2">2 Orang</option>
+                        </select>
+                        <div class="flex gap-8 text-[10px] py-4 text-navy-deep font-medium uppercase tracking-wider">
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="radio" name="attend" value="Hadir" 
+                                       class="w-3 h-3 accent-[var(--navy-deep)] cursor-pointer" checked> 
+                                <span class="group-hover:opacity-80 transition-opacity">Hadir</span>
+                            </label>
+                        
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <input type="radio" name="attend" value="Berhalangan" 
+                                       class="w-3 h-3 accent-[var(--navy-deep)] cursor-pointer"> 
+                                <span class="group-hover:opacity-80 transition-opacity">Berhalangan</span>
+                            </label>
+                        </div>
+                        
+                        <button type="submit"
+                            class="w-full py-3 text-[10px] uppercase font-bold rounded-lg mt-4 border border-[var(--navy-deep)] text-navy-deep bg-transparent hover:bg-[var(--navy-deep)] hover:text-white transition-all duration-300">
+                            Kirim
+                        </button>
+                    </form>
+                </div>
+
+                <div class="flex flex-col bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-xl" data-aos="fade-up">
+    
+                    <h3 class="text-2xl font-serif pb-4 mb-8 text-[var(--navy-deep)] text-center md:text-left border-b border-gray-100 shadow-[0_4px_6px_-6px_rgba(0,0,0,0.3)]">
+                        Ucapan & Doa
+                    </h3>
+                    
+                    <div id="wishes-list" class="flex flex-col flex-1 max-h-80 overflow-y-auto mb-8 pr-4 custom-scrollbar border-b-2 border-[var(--navy-deep)]/20 pb-6">
+                        <p class="text-xs opacity-50 text-black italic text-center">Memuat ucapan...</p>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <input type="text" id="wish-name" placeholder="Nama Anda" 
+                            class="w-full bg-gray-50 border border-gray-200 p-3 text-xs outline-none focus:border-[var(--navy-deep)] rounded-lg text-black transition-colors" required>
+                        
+                        <textarea id="wish-input" placeholder="Tulis ucapan..."
+                            class="w-full bg-gray-50 border border-gray-200 p-4 h-24 text-xs outline-none focus:border-[var(--navy-deep)] rounded-lg text-black transition-colors resize-none" required></textarea>
+                        
+                            <button onclick="window.sendWish()"
+                            class="w-full py-3 text-[10px] uppercase font-bold rounded-lg mt-4 
+                                   border border-[var(--navy-deep)] text-[var(--navy-deep)] bg-transparent 
+                                   hover:bg-[var(--navy-deep)] hover:text-white transition-all duration-300 
+                                   shadow-sm active:scale-95">
+                            Kirim Ucapan
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 text-center bg-[var(--navy-deep)] text-white">
+        <h2 class="text-4xl font-serif mb-4">Hedar & Puspita</h2>
+        <p class="text-[10px] uppercase tracking-widest text-slate-gray opacity-60 px-6 leading-loose">
+            Terima kasih atas doa & kehadiran Anda.<br>Sampai jumpa di hari bahagia kami.
+        </p>
+    </footer>
+
+    <div id="toast"
+        class="fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-3 rounded-full text-[10px] text-navy-deep uppercase tracking-widest shadow-xl hidden z-[10000]">
+    </div>
+
+    <div id="music-container" class="fixed bottom-6 left-6 z-50 hidden">
+        <button id="music-btn" onclick="toggleMusic()"
+            class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-navy-deep shadow-md border">
+            <i class="fa-solid fa-compact-disc text-lg"></i>
+        </button>
+        <audio id="bg-music" loop>
+            <source src="../asssets/Music.mp3"
+                type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        
+        // AOS.init({ duration: 1000, once: true });
+        AOS.init({
+        duration: 1000, // Durasi animasi (1 detik)
+        once: false,    // Set ke false agar animasi fade out/in terjadi berulang kali saat scroll
+        mirror: true,   // Menghasilkan efek fade out saat elemen keluar layar ke arah atas
+        offset: 120,    // Memulai animasi saat elemen berjarak 120px dari viewport
+    });
+
+        const targetDate = new Date("April 14, 2026 07:00:00").getTime();
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+            if (diff < 0) return;
+            document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+            document.getElementById('hours').innerText = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+            document.getElementById('minutes').innerText = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+            document.getElementById('seconds').innerText = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+        }
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+        function openInvitation() {
+    // Sembunyikan cover
+    document.getElementById('cover').classList.add('hide');
+    
+    // Munculkan tombol musik
+    const musicContainer = document.getElementById('music-container');
+    musicContainer.classList.remove('hidden');
+    
+    // Putar musik
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('music-btn');
+    
+    audio.play().then(() => {
+        btn.classList.add('playing');
+    }).catch(e => {
+        console.log("Autoplay dicegah oleh browser, musik akan menyala setelah interaksi berikutnya.");
+    });
+}
+
+function toggleMusic() {
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('music-btn');
+    
+    if (audio.paused) { 
+        audio.play(); 
+        btn.classList.add('playing'); 
+    } else { 
+        audio.pause(); 
+        btn.classList.remove('playing'); 
+    }
+}
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function openInvitation() {
+    // 1. Hapus kelas no-scroll agar user bisa scroll kembali
+    document.body.classList.remove('no-scroll');
+
+    // 2. Sembunyikan cover
+    document.getElementById('cover').classList.add('hide');
+    
+    // 3. Munculkan tombol musik
+    const musicContainer = document.getElementById('music-container');
+    musicContainer.classList.remove('hidden');
+    
+    // 4. Putar musik
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('music-btn');
+    
+    audio.play().then(() => {
+        btn.classList.add('playing');
+    }).catch(e => {
+        console.log("Autoplay dicegah oleh browser.");
+    });
+}
+
+window.addEventListener('scroll', function() {
+    const blurOverlay = document.getElementById('blur-overlay');
+    const scrollPosition = window.scrollY;
+    
+    // Hitung intensitas blur (misal: makin scroll ke bawah, makin blur)
+    // Angka 200 adalah jarak scroll (pixel) saat blur mencapai maksimal
+    const blurIntensity = Math.min(scrollPosition / 20, 10); 
+    
+    // Terapkan ke style
+    blurOverlay.style.backdropFilter = `blur(${blurIntensity}px)`;
+    blurOverlay.style.webkitBackdropFilter = `blur(${blurIntensity}px)`; // Untuk Safari
+    
+    // Opsional: Tambahkan sedikit kegelapan saat scroll
+    const darkIntensity = Math.min(scrollPosition / 500, 0.4);
+    blurOverlay.style.backgroundColor = `rgba(0, 31, 63, ${darkIntensity})`; // Mengikuti warna navy kamu
+});
+
+    </script>
+</body>
+
+</html>
