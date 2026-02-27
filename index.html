@@ -385,6 +385,7 @@
 
       /* Navigation Style - Melayang di tengah bawah */
       /* Navigation Style */
+      /* Navigasi Melayang (Tetap di posisi awal/tengah-bawah agar tidak tabrakan) */
       .nav-floating {
         position: fixed;
         bottom: 20px;
@@ -954,16 +955,11 @@
       </div>
     </footer>
 
-    <div
-      id="toast"
-      class="fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-8 py-3 rounded-full text-[10px] text-navy-deep uppercase tracking-widest shadow-xl hidden z-[10000]"
-    ></div>
-
-    <div id="music-container" class="fixed bottom-6 left-6 z-50 hidden">
+    <div id="music-container" class="fixed bottom-20 right-6 z-[10000] hidden">
       <button
         id="music-btn"
         onclick="toggleMusic()"
-        class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-navy-deep shadow-md border"
+        class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center text-navy-deep shadow-md border animate-[spin_4s_linear_infinite]"
       >
         <i class="fa-solid fa-compact-disc text-lg"></i>
       </button>
