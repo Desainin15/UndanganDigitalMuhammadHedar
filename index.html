@@ -103,21 +103,94 @@
         });
       };
 
-      // Fungsi untuk memunculkan modal
+      // 1. PENGUNCIAN SCROLL SAAT REFRESH
+      document.addEventListener("DOMContentLoaded", () => {
+        document.body.classList.add("no-scroll");
+        window.scrollTo(0, 0); // Selalu kembali ke atas saat refresh
+      });
+
+      // 2. FUNGSI BUKA UNDANGAN (GLOBAL)
+      window.openInvitation = () => {
+        // Hapus pengunci scroll
+        document.body.classList.remove("no-scroll");
+        document.body.style.position = "";
+
+        // Sembunyikan cover
+        document.getElementById("cover").classList.add("hide");
+
+        // Aktifkan Musik
+        const musicContainer = document.getElementById("music-container");
+        musicContainer.classList.remove("hidden");
+        const audio = document.getElementById("bg-music");
+        audio.play().catch(() => console.log("Autoplay blocked."));
+
+        // Munculkan Navigasi
+        const navMenu = document.getElementById("nav-menu");
+        navMenu.classList.remove("hidden");
+        navMenu.classList.add("show");
+      };
+
+      // 3. LOGIKA POP-UP AGAR TIDAK JUMP/SCROLL KE ATAS
       window.showModal = (title, message) => {
         const modal = document.getElementById("modal-success");
         document.getElementById("modal-title").innerText = title;
         document.getElementById("modal-message").innerText = message;
+
+        // Simpan posisi scroll saat ini
+        const scrollY = window.scrollY;
         modal.classList.remove("hidden");
-        // Tambahkan no-scroll agar saat modal buka, background tidak bisa di-scroll
-        document.body.classList.add("no-scroll");
+
+        // Kunci body agar tidak bisa di-scroll tapi TETAP di posisi sekarang
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = "100%";
       };
 
-      // Fungsi untuk menutup modal
       window.closeModal = () => {
         const modal = document.getElementById("modal-success");
+
+        // Ambil nilai posisi scroll yang disimpan di properti 'top'
+        const scrollY = document.body.style.top;
+
         modal.classList.add("hidden");
-        document.body.classList.remove("no-scroll");
+
+        // Kembalikan body ke normal
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.width = "";
+
+        // Kembalikan posisi layar ke tempat sebelum pop-up muncul
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      };
+
+      // Pastikan fungsi sendWish tidak menyebabkan lonjakan halaman
+      window.sendWish = async () => {
+        const nameInput = document.getElementById("wish-name");
+        const msgInput = document.getElementById("wish-input");
+
+        if (!nameInput.value.trim() || !msgInput.value.trim()) {
+          alert("Mohon isi nama dan ucapan Anda.");
+          return;
+        }
+
+        try {
+          await addDoc(collection(db, "wishes"), {
+            name: nameInput.value.trim(),
+            message: msgInput.value.trim(),
+            timestamp: serverTimestamp(),
+          });
+
+          nameInput.value = "";
+          msgInput.value = "";
+
+          // Memanggil modal tanpa refresh halaman
+          showModal(
+            "Terima Kasih!",
+            "Ucapan dan doa tulus Anda telah berhasil kami simpan.",
+          );
+        } catch (e) {
+          console.error(e);
+        }
       };
 
       // Update sendWish
@@ -212,8 +285,15 @@
       }
 
       .no-scroll {
-        overflow: hidden;
-        height: 100vh;
+        overflow: hidden !important;
+        height: 100vh !important;
+        touch-action: none; /* Mematikan scroll di layar sentuh */
+        -ms-touch-action: none;
+      }
+
+      #modal-success {
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
 
       .font-serif {
@@ -244,14 +324,16 @@
 
       .parallax-hero {
         background-attachment: fixed;
-        background-position: center;
         background-size: cover;
+        /* Default untuk desktop: benar-benar di tengah */
+        background-position: center top;
       }
 
-      /* Responsive Fix for Mobile Parallax */
       @media (max-width: 768px) {
         .parallax-hero {
           background-attachment: scroll;
+          /* Khusus Mobile: fokus ke atas agar pengantin tidak terpotong sampingnya */
+          background-position: center top;
         }
       }
 
@@ -300,18 +382,92 @@
         transform: translateY(-5px) scale(1.02);
         z-index: 10;
       }
+
+      /* Navigation Style - Melayang di tengah bawah */
+      /* Navigation Style */
+      .nav-floating {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 10px 20px;
+        border-radius: 50px;
+        display: flex;
+        gap: 25px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 31, 63, 0.1);
+        z-index: 9998;
+      }
+
+      .nav-link {
+        color: #708090; /* Warna Slate Gray saat tidak aktif */
+        font-size: 18px;
+        transition: all 0.3s ease;
+      }
+
+      /* Warna Navy saat Aktif atau di-Hover */
+      .nav-link:hover,
+      .nav-link.active {
+        color: var(--navy-deep);
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+
+      /* Animasi muncul saat tombol buka undangan diklik */
+      .nav-floating.show {
+        display: flex !important;
+        animation: slideUp 0.5s ease forwards;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translate(-50%, 100px);
+          opacity: 0;
+        }
+        to {
+          transform: translate(-50%, 0);
+          opacity: 1;
+        }
+      }
     </style>
   </head>
 
   <body class="antialiased no-scroll">
+    <nav id="nav-menu" class="nav-floating hidden">
+      <a href="#" class="nav-link active" onclick="setActive(this)"
+        ><i class="fa-solid fa-house"></i
+      ></a>
+      <a href="#mempelai" class="nav-link" onclick="setActive(this)"
+        ><i class="fa-solid fa-heart"></i
+      ></a>
+      <a href="#acara" class="nav-link" onclick="setActive(this)"
+        ><i class="fa-solid fa-calendar-check"></i
+      ></a>
+      <a href="#galeri" class="nav-link" onclick="setActive(this)"
+        ><i class="fa-solid fa-images"></i
+      ></a>
+      <a href="#rsvp" class="nav-link" onclick="setActive(this)"
+        ><i class="fa-solid fa-message"></i
+      ></a>
+    </nav>
+
     <div id="cover" class="cover-screen px-6 text-center">
       <div data-aos="fade-up">
         <p
-          class="uppercase tracking-[0.3em] md:tracking-[0.5em] text-[9px] md:text-[10px] mb-6 opacity-70"
+          class="uppercase tracking-[0.3em] md:tracking-[0.5em] text-[9px] md:text-[10px] mb-4 md:mb-6 opacity-70"
         >
           Wedding Invitation
         </p>
-        <h1 class="text-5xl md:text-8xl font-serif mb-8">Hedar & Puspita</h1>
+
+        <h1
+          class="text-3xl sm:text-4xl md:text-7xl font-serif mb-8 leading-tight px-2"
+        >
+          Muhammad Hedar
+          <span class="block md:inline my-2 md:my-0">&</span> Puspitasari
+          Damayanti
+        </h1>
 
         <div
           class="w-32 h-32 md:w-48 md:h-48 mx-auto mb-8 relative group"
@@ -320,7 +476,6 @@
           <div
             class="absolute inset-0 rounded-full border-2 border-dashed border-white/30 animate-[spin_10s_linear_infinite]"
           ></div>
-
           <div
             class="w-full h-full rounded-full border-4 border-white/20 p-1 overflow-hidden shadow-xl bg-white/10 backdrop-blur-sm"
           >
@@ -332,12 +487,15 @@
           </div>
         </div>
 
-        <p class="font-serif italic text-base md:text-lg mb-10 opacity-80 px-4">
+        <p
+          class="font-serif italic text-sm md:text-lg mb-10 opacity-80 px-4 max-w-md mx-auto leading-relaxed"
+        >
           Kami mengundang Anda untuk merayakan cinta kami.
         </p>
+
         <button
           onclick="openInvitation()"
-          class="px-8 py-3 border border-white/50 rounded-full tracking-widest uppercase text-[10px] text-white hover:bg-white hover:text-[var(--navy-deep)] transition-all duration-300"
+          class="px-8 py-3 border border-white/50 rounded-full tracking-widest uppercase text-[10px] text-white hover:bg-white hover:text-[var(--navy-deep)] transition-all duration-300 shadow-lg active:scale-95"
         >
           <i class="fa-solid fa-envelope-open mr-2"></i> Buka Undangan
         </button>
@@ -350,10 +508,12 @@
       <div
         class="absolute inset-0 parallax-hero"
         style="
-          background-image: url(&quot;https://lh3.googleusercontent.com/d/1btA1WS_P0U-GSm6THHatwcmmXBrTk6LD&quot;);
-          filter: brightness(0.7);
+          background-image: url(&quot;https://lh3.googleusercontent.com/d/12xuYRnXWm2OSH-8GmI1-YNcppa-SgR06&quot;);
+          filter: brightness(0.65);
         "
       ></div>
+
+      <div class="absolute inset-0 bg-black/20"></div>
 
       <div
         id="blur-overlay"
@@ -365,7 +525,9 @@
           class="uppercase tracking-[0.5em] text-[10px] md:text-xs mb-4 block"
           >The Marriage Of</span
         >
-        <h2 class="text-6xl md:text-9xl font-serif mb-6">Hedar & Puspita</h2>
+        <h2 class="text-5xl md:text-9xl font-serif mb-6 leading-tight">
+          Hedar & Puspita
+        </h2>
         <p class="text-lg md:text-2xl font-serif italic tracking-widest">
           06 . 04 . 2026
         </p>
@@ -391,7 +553,12 @@
       </div>
     </section>
 
-    <section class="py-20 bg-[#F9FAFB]" data-aos="fade-in" data-aos-delay="200">
+    <section
+      class="py-20 bg-[#F9FAFB]"
+      data-aos="fade-in"
+      data-aos-delay="200"
+      id="mempelai"
+    >
       <div class="max-w-6xl mx-auto px-6">
         <div class="grid md:grid-cols-2 gap-16 md:gap-24 text-center">
           <div data-aos="fade-up">
@@ -400,13 +567,13 @@
             >
               <img
                 src="https://lh3.googleusercontent.com/d/1dVJAzYjH6jW5IaDbgKI6d60ZFbS6X0R9"
-                class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-500 cursor-pointer"
+                class="w-full h-full object-cover transition duration-500 cursor-pointer"
                 alt="Groom"
               />
             </div>
             <h3 class="text-4xl md:text-5xl font-serif mb-4">Muhammad Hedar</h3>
             <p class="text-sm text-slate-gray">
-              Putra dari Bapak Ujang/Opik & Ibu Iyah
+              Putra ke 1 dari Bapak Ujang/Opik & Ibu Iyah
             </p>
           </div>
 
@@ -416,7 +583,7 @@
             >
               <img
                 src="https://lh3.googleusercontent.com/d/1bD7DgNkf9kwpHI2U2_Fo-LYjlXiscKxO"
-                class="w-full h-full object-cover grayscale hover:grayscale-0 transition duration-500 cursor-pointer"
+                class="w-full h-full object-cover transition duration-500 cursor-pointer"
                 alt="Bride"
               />
             </div>
@@ -424,7 +591,7 @@
               Puspitasari Damayanti
             </h3>
             <p class="text-sm text-slate-gray">
-              Putri dari Bapak Udin Syamsudin & Ibu Yoyoh
+              Putri ke 5 dari Bapak Udin Syamsudin & Ibu Yoyoh
             </p>
           </div>
         </div>
@@ -434,6 +601,7 @@
     <section
       class="py-20 bg-[var(--navy-deep)] text-black text-center"
       data-aos="fade-up"
+      id="acara"
     >
       <div class="max-w-4xl mx-auto px-6">
         <h2
@@ -546,7 +714,7 @@
     <!-- Akhir Maps -->
 
     <!-- galeri -->
-    <section class="py-20 bg-white" data-aos="fade-up">
+    <section class="py-20 bg-white" data-aos="fade-up" id="galeri">
       <div class="max-w-6xl mx-auto px-6">
         <div class="text-center mb-16">
           <h2 class="text-4xl font-serif text-[var(--navy-deep)] mb-4">
@@ -619,7 +787,7 @@
     </section>
     <!-- akhir galeri -->
 
-    <section class="py-20 bg-[#F9FAFB]" data-aos="fade-up">
+    <section class="py-20 bg-[#F9FAFB]" data-aos="fade-up" id="rsvp">
       <div class="max-w-4xl mx-auto px-6">
         <div class="grid lg:grid-cols-2 gap-16">
           <div class="glass-card p-8 rounded-xl shadow-sm">
@@ -763,14 +931,27 @@
     </div>
     <!-- akhir Pop-up -->
 
-    <footer class="py-20 text-center bg-[var(--navy-deep)] text-white">
-      <h2 class="text-4xl font-serif mb-4">Hedar & Puspita</h2>
-      <p
-        class="text-[10px] uppercase tracking-widest text-slate-gray opacity-60 px-6 leading-loose"
+    <footer class="bg-[var(--navy-deep)] text-white">
+      <div class="py-20 text-center">
+        <h2 class="text-4xl font-serif mb-4">Hedar & Puspita</h2>
+        <p
+          class="text-[10px] uppercase tracking-widest text-slate-gray opacity-60 px-6 leading-loose"
+        >
+          Terima kasih atas doa & kehadiran Anda.<br />
+          Sampai jumpa di hari bahagia kami.
+        </p>
+      </div>
+
+      <div
+        class="py-6 bg-black/30 border-t border-white/5 text-center pr-16 md:pr-0"
       >
-        Terima kasih atas doa & kehadiran Anda.<br />Sampai jumpa di hari
-        bahagia kami.
-      </p>
+        <!-- <h6
+          class="text-[9px] uppercase tracking-[0.3em] font-medium opacity-50"
+        >
+          Design By
+          <span class="text-white opacity-100">Desain'In</span>
+        </h6> -->
+      </div>
     </footer>
 
     <div
@@ -801,7 +982,7 @@
         offset: 120, // Memulai animasi saat elemen berjarak 120px dari viewport
       });
 
-      const targetDate = new Date("April 6, 2026 07:00:00").getTime();
+      const targetDate = new Date("April 13, 2026 07:00:00").getTime();
       function updateCountdown() {
         const now = new Date().getTime();
         const diff = targetDate - now;
@@ -831,27 +1012,15 @@
       updateCountdown();
 
       function openInvitation() {
-        // Sembunyikan cover
+        // Hapus pengunci scroll
+        document.body.classList.remove("no-scroll");
+        document.body.style.position = ""; // Pastikan style inline juga bersih
+
         document.getElementById("cover").classList.add("hide");
 
-        // Munculkan tombol musik
-        const musicContainer = document.getElementById("music-container");
-        musicContainer.classList.remove("hidden");
-
-        // Putar musik
+        // Logika musik kamu tetap di sini...
         const audio = document.getElementById("bg-music");
-        const btn = document.getElementById("music-btn");
-
-        audio
-          .play()
-          .then(() => {
-            btn.classList.add("playing");
-          })
-          .catch((e) => {
-            console.log(
-              "Autoplay dicegah oleh browser, musik akan menyala setelah interaksi berikutnya.",
-            );
-          });
+        audio.play().catch(() => console.log("Autoplay blocked."));
       }
 
       function toggleMusic() {
@@ -898,6 +1067,16 @@
             console.log("Autoplay dicegah oleh browser.");
           });
       }
+
+      // Fungsi untuk mengubah warna ikon yang aktif
+      window.setActive = (element) => {
+        // Hapus class 'active' dari semua link
+        document.querySelectorAll(".nav-link").forEach((link) => {
+          link.classList.remove("active");
+        });
+        // Tambahkan class 'active' ke ikon yang diklik
+        element.classList.add("active");
+      };
 
       window.addEventListener("scroll", function () {
         const blurOverlay = document.getElementById("blur-overlay");
