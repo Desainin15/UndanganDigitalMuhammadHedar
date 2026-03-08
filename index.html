@@ -452,6 +452,9 @@
       <a href="#rsvp" class="nav-link" onclick="setActive(this)"
         ><i class="fa-solid fa-message"></i
       ></a>
+      <a href="#gift" class="nav-link" onclick="setActive(this)"
+        ><i class="fa-solid fa-gift"></i
+      ></a>
     </nav>
 
     <div id="cover" class="cover-screen px-6 text-center">
@@ -530,7 +533,7 @@
           Hedar & Puspita
         </h2>
         <p class="text-lg md:text-2xl font-serif italic tracking-widest">
-          06 . 04 . 2026
+          13 . 04 . 2026 - 14 . 04 . 2026
         </p>
       </div>
     </section>
@@ -690,20 +693,21 @@
         >
           <div class="relative w-full pb-[56.25%] h-0">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15858.400997776615!2d107.04213274637274!3d-6.445342743469538!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69970005d28c0b%3A0x5c53fd382a410ff7!2skp.cibucil!5e0!3m2!1sid!2sid!4v1771698468247!5m2!1sid!2sid"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3964.2961723305293!2d107.0763909816742!3d-6.484126249974851!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69bd1841af258d%3A0x12bff8046cf771bb!2sJl.%20Kecileduk%2C%20Kec.%20Jonggol%2C%20Kabupaten%20Bogor%2C%20Jawa%20Barat%2016830!5e0!3m2!1sid!2sid!4v1772991016222!5m2!1sid!2sid"
               class="absolute top-0 left-0 w-full h-full rounded-xl"
+              width="600"
+              height="450"
               style="border: 0"
               allowfullscreen=""
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
-            >
-            </iframe>
+            ></iframe>
           </div>
         </div>
 
         <div class="text-center mt-8">
           <a
-            href="https://maps.app.goo.gl/JWvBw57M6huszGW77"
+            href="https://maps.app.goo.gl/p8CnDFBMNpier4JZ6"
             target="_blank"
             class="bg-white text-[var(--navy-deep)] border border-[var(--navy-deep)] px-10 py-3 rounded-full text-[10px] uppercase font-bold tracking-widest inline-block shadow-md hover:bg-[var(--navy-deep)] hover:text-white transition-all duration-300"
           >
@@ -788,73 +792,99 @@
     </section>
     <!-- akhir galeri -->
 
-    <section class="py-20 bg-[#F9FAFB]" data-aos="fade-up" id="rsvp">
+    <section
+      class="py-20 bg-[var(--navy-deep)] text-white"
+      data-aos="fade-up"
+      id="rsvp"
+    >
       <div class="max-w-4xl mx-auto px-6">
         <div class="grid lg:grid-cols-2 gap-16">
-          <div class="glass-card p-8 rounded-xl shadow-sm">
-            <h3 class="text-2xl font-serif mb-8 text-center md:text-left">
+          <div
+            class="bg-white p-8 rounded-2xl border border-gray-100 shadow-2xl transition-all duration-500 hover:shadow-navy-deep/20 text-black"
+          >
+            <h3
+              class="text-2xl font-serif mb-8 text-center md:text-left text-[var(--navy-deep)] border-b border-gray-100 pb-4 shadow-[0_4px_6px_-6px_rgba(0,0,0,0.3)]"
+            >
               RSVP
             </h3>
+
             <form
               id="rsvp-form"
               onsubmit="window.handleRSVP(event)"
-              class="space-y-4"
+              class="space-y-5"
             >
-              <input
-                type="text"
-                id="rsvp-name"
-                placeholder="Nama"
-                class="w-full bg-white/50 border-b py-3 outline-none text-xs uppercase"
-                required
-              />
-              <select
-                id="rsvp-guests"
-                class="w-full bg-white/50 border-b py-3 outline-none text-xs uppercase"
-              >
-                <option value="1">1 Orang</option>
-                <option value="2">2 Orang</option>
-              </select>
-              <div
-                class="flex gap-8 text-[10px] py-4 text-navy-deep font-medium uppercase tracking-wider"
-              >
-                <label class="flex items-center gap-2 cursor-pointer group">
+              <div class="relative group">
+                <input
+                  type="text"
+                  id="rsvp-name"
+                  placeholder="Nama Lengkap"
+                  class="w-full bg-gray-50 border border-gray-200 p-3 text-xs uppercase rounded-lg outline-none focus:border-[var(--navy-deep)] focus:ring-1 focus:ring-[var(--navy-deep)]/10 transition-all placeholder:opacity-50"
+                  required
+                />
+                <div
+                  class="absolute right-3 top-3 text-[var(--navy-deep)] opacity-20 group-focus-within:opacity-100 transition-opacity"
+                >
+                  <i class="fa-solid fa-user"></i>
+                </div>
+              </div>
+
+              <div class="relative group">
+                <select
+                  id="rsvp-guests"
+                  class="w-full bg-gray-50 border border-gray-200 p-3 text-xs uppercase rounded-lg outline-none focus:border-[var(--navy-deep)] appearance-none cursor-pointer"
+                >
+                  <option value="1">1 Orang</option>
+                  <option value="2">2 Orang</option>
+                </select>
+                <div
+                  class="absolute right-3 top-3 text-[var(--navy-deep)] opacity-20 pointer-events-none"
+                >
+                  <i class="fa-solid fa-users"></i>
+                </div>
+              </div>
+
+              <div class="flex gap-4 py-2">
+                <label class="flex-1">
                   <input
                     type="radio"
                     name="attend"
                     value="Hadir"
-                    class="w-3 h-3 accent-[var(--navy-deep)] cursor-pointer"
+                    class="hidden peer"
                     checked
                   />
-                  <span class="group-hover:opacity-80 transition-opacity"
-                    >Hadir</span
+                  <div
+                    class="text-center p-2 text-[10px] uppercase font-bold tracking-widest border border-gray-200 rounded-lg cursor-pointer peer-checked:bg-[var(--navy-deep)] peer-checked:text-white peer-checked:border-[var(--navy-deep)] transition-all"
                   >
+                    Hadir
+                  </div>
                 </label>
-
-                <label class="flex items-center gap-2 cursor-pointer group">
+                <label class="flex-1">
                   <input
                     type="radio"
                     name="attend"
                     value="Berhalangan"
-                    class="w-3 h-3 accent-[var(--navy-deep)] cursor-pointer"
+                    class="hidden peer"
                   />
-                  <span class="group-hover:opacity-80 transition-opacity"
-                    >Berhalangan</span
+                  <div
+                    class="text-center p-2 text-[10px] uppercase font-bold tracking-widest border border-gray-200 rounded-lg cursor-pointer peer-checked:bg-red-700 peer-checked:text-white peer-checked:border-red-700 transition-all text-gray-400"
                   >
+                    Berhalangan
+                  </div>
                 </label>
               </div>
 
               <button
                 type="submit"
-                class="w-full py-3 text-[10px] uppercase font-bold rounded-lg mt-4 border border-[var(--navy-deep)] text-navy-deep bg-transparent hover:bg-[var(--navy-deep)] hover:text-white transition-all duration-300"
+                class="w-full py-4 text-[10px] uppercase font-bold rounded-xl mt-4 border border-[var(--navy-deep)] text-[var(--navy-deep)] bg-transparent hover:bg-[var(--navy-deep)] hover:text-white transition-all duration-300 shadow-sm active:scale-95 flex items-center justify-center gap-2"
               >
-                Kirim
+                <span>Kirim Konfirmasi</span>
+                <i class="fa-solid fa-paper-plane text-[9px]"></i>
               </button>
             </form>
           </div>
 
           <div
-            class="flex flex-col bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-xl"
-            data-aos="fade-up"
+            class="flex flex-col bg-white rounded-2xl p-6 md:p-8 shadow-2xl text-black"
           >
             <h3
               class="text-2xl font-serif pb-4 mb-8 text-[var(--navy-deep)] text-center md:text-left border-b border-gray-100 shadow-[0_4px_6px_-6px_rgba(0,0,0,0.3)]"
@@ -864,7 +894,7 @@
 
             <div
               id="wishes-list"
-              class="flex flex-col flex-1 max-h-80 overflow-y-auto mb-8 pr-4 custom-scrollbar border-b-2 border-[var(--navy-deep)]/20 pb-6"
+              class="flex flex-col flex-1 max-h-80 overflow-y-auto mb-8 pr-4 custom-scrollbar border-b-2 border-[var(--navy-deep)]/10 pb-6"
             >
               <p class="text-xs opacity-50 text-black italic text-center">
                 Memuat ucapan...
@@ -891,9 +921,60 @@
                 onclick="window.sendWish()"
                 class="w-full py-3 text-[10px] uppercase font-bold rounded-lg mt-4 border border-[var(--navy-deep)] text-[var(--navy-deep)] bg-transparent hover:bg-[var(--navy-deep)] hover:text-white transition-all duration-300 shadow-sm active:scale-95"
               >
-                Kirim Ucapan
+                <span>Kirim Ucapan</span>
+                <i class="fa-solid fa-paper-plane text-[9px]"></i>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gift" class="py-20 bg-white" data-aos="fade-up">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <h2
+          class="text-3xl md:text-4xl font-serif text-[var(--navy-deep)] mb-4"
+        >
+          Wedding Gift
+        </h2>
+        <p class="text-sm text-slate-gray mb-12 max-w-md mx-auto">
+          Doa restu Anda merupakan hadiah terindah bagi kami. Namun jika Anda
+          ingin memberikan tanda kasih, Anda dapat mengirimkannya melalui:
+        </p>
+
+        <div
+          class="max-w-sm mx-auto bg-[#f8f9fa] border border-navy-deep/10 rounded-2xl p-8 shadow-sm relative overflow-hidden group"
+        >
+          <div
+            class="absolute -right-4 -top-4 opacity-5 group-hover:scale-110 transition-transform duration-700"
+          >
+            <i class="fa-solid fa-credit-card text-9xl text-navy-deep"></i>
+          </div>
+
+          <div class="relative z-10">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png"
+              alt="BCA Logo"
+              class="h-8 mx-auto mb-6 object-contain"
+            />
+
+            <p class="text-xs uppercase tracking-widest text-slate-gray mb-2">
+              Nomor Rekening
+            </p>
+            <h4
+              id="no-rekening"
+              class="text-2xl font-bold text-[var(--navy-deep)] mb-2 tracking-wider"
+            >
+              4062344435
+            </h4>
+            <p class="text-sm font-medium mb-8">a.n Muhammad Hedar</p>
+
+            <button
+              onclick="copyToClipboard('4062344435')"
+              class="inline-flex items-center gap-2 bg-[var(--navy-deep)] text-white px-6 py-3 rounded-full text-[10px] uppercase font-bold tracking-widest hover:bg-[#00152b] transition-all active:scale-95 shadow-md"
+            >
+              <i class="fa-solid fa-copy"></i> Salin Rekening
+            </button>
           </div>
         </div>
       </div>
@@ -1072,6 +1153,24 @@
         });
         // Tambahkan class 'active' ke ikon yang diklik
         element.classList.add("active");
+      };
+
+      // Fungsi Salin Nomor Rekening
+      window.copyToClipboard = (text) => {
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            // Memanggil modal success yang sudah kamu buat sebelumnya
+            showModal(
+              "Berhasil Disalin!",
+              "Nomor rekening BCA 4062344435 telah disalin ke papan klip Anda.",
+            );
+          })
+          .catch((err) => {
+            console.error("Gagal menyalin: ", err);
+            // Fallback menggunakan toast jika modal gagal (opsional)
+            showToast("Gagal menyalin nomor rekening.");
+          });
       };
 
       window.addEventListener("scroll", function () {
